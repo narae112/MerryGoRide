@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default}">
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+         .carousel-schedule {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            white-space: nowrap;
+            min-height: 250px; /* 최소 높이 지정 */
+            padding-left: 100px; /* 왼쪽 패딩 추가 */
+        }
+        .carousel-item-schedule {
+            flex: 0 0 auto;
+            text-align: center;
+            margin: 0 10px;
+        }
+        .carousel-item-schedule img {
+            max-width: 300px; /* 최대 가로 크기 */
+            max-height: 400px; /* 최대 세로 크기 */
+            object-fit: contain; /* 이미지를 컨테이너에 맞추되, 비율을 유지하며 크기 조절 */
+            object-position: center; /* 이미지를 중앙에서부터 위치시킴 */
+            margin: 20px 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div layout:fragment="content" class="container my-5">
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <span th:text="${error}"></span>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h3 class="mb-5 text-center boardTitle" th:text="${goWithBoardForm.title}"></h3>
+
+            <!-- 작성자 프로필 및 날짜 -->
+            <div class="d-flex align-items-center justify-content-start">
+                <img th:if="${goWithBoardForm.memberProfileImgUrl != null}" th:src="${goWithBoardForm.memberProfileImgUrl}" class="rounded-circle ms-3" width="40" height="40">
+                <img th:if="${goWithBoardForm.memberProfileImgUrl == null}" src="/img/unicorn.png" class="rounded-circle ms-3" width="40" height="40">
+                <div class="d-flex flex-column ms-2">
+                    <div class="d-flex align-items-center">
+                        <span th:text="${goWithBoardForm.memberName}" class="userNick"></span>
+                        <span class="ms-2" th:if="${goWithBoard.modifiedDate == null}" th:text="${#temporals.format(goWithBoard.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+                        <span class="ms-2" th:if="${goWithBoard.modifiedDate != null}" th:text="${#temporals.format(goWithBoard.modifiedDate, 'yyyy-MM-dd HH:mm')} + ' 수정됨'"></span>
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <!-- 이미지 갤러리 -->
+            <div class="carousel-schedule my-3">
+                <div th:each="goWithImage, iterStat : ${goWithBoardForm.goWithImgDtoList}" class="carousel-item-schedule">
+                    <a th:if="${not #strings.isEmpty(goWithImage.imgUrl)}" th:href="${goWithImage.imgUrl}" data-lightbox="gallery">
+                        <img th:src="${goWithImage.imgUrl}" class="rounded">
+                    </a>
+                </div>
+            </div>
+
+            <!-- 글 내용 -->
+            <div class="goWith-content">
+                <div class=" my-3">
+                    <div class="" th:utext="${@commonUtil.markdown(goWithBoardForm.content)}"></div>
+                    <hr>
+
+                    <div class="mt-2">
+                        <!-- attractionTypes 섹션 -->
+                        <div class="attraction-types-header my-2">놀이기구 취향</div>
+                        <div class="attraction-types-content d-flex flex-wrap">
+                            <div th:if="${#lists.size(goWithBoard.attractionTypes) > 0}">
+                                <div th:each="attractionType : ${goWithBoard.attractionTypes}">
+                                    <p th:text="${attractionType}"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <hr/>
+                        <!-- afterTypes 섹션 -->
+                        <div class="after-types-header my-2">동행 후 행선지</div>
+                        <div class="after-types-content d-flex flex-wrap">
+                            <div th:if="${#lists.size(goWithBoard.afterTypes) > 0}">
+                                <div th:each="afterType : ${goWithBoard.afterTypes}">
+                                    <p th:text="${afterType}"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <hr/>
+                        <!-- personalities 섹션 -->
+                        <div class="personalities-header my-2">성격</div>
+                        <div class="personalities-content d-flex flex-wrap">
+                            <div th:if="${#lists.size(goWithBoard.personalities) > 0}">
+                                <div th:each="personality : ${goWithBoard.personalities}">
+                                    <p th:text="${personality}"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="my-3">
+                        <a th:href="@{/goWithBoard/list}" class="btn btn-sm btn-outline-secondary">목록으로</a>
+                        <a th:href="@{|/startChat/${goWithBoard.id}/${goWithBoard.member.nickname}|}" class="btn btn-sm mgrBtn my-2"
+                           sec:authorize="isAuthenticated()"
+                           th:unless="${goWithBoard.member != null and #authentication.getPrincipal().getName() == goWithBoard.member.name}"
+                           th:text="채팅하기"></a>
+                        <a th:href="@{|/goWithBoard/modify/${goWithBoard.id}|}" class="btn btn-sm btn-outline-secondary"
+                           sec:authorize="isAuthenticated()"
+                           th:if="${goWithBoard.member != null and #authentication.getPrincipal().getName() == goWithBoard.member.name}"
+                           th:text="수정"></a>
+                        <a href="javascript:void(0);" class="delete btn btn-sm btn-outline-secondary"
+                           th:data-uri="@{|/goWithBoard/delete/${goWithBoard.id}|}"
+                           sec:authorize="isAuthenticated()"
+                           th:if="${goWithBoard.member != null and #authentication.getPrincipal().getName() == goWithBoard.member.name}"
+                           th:text="삭제" onclick="deleteQuestion(event)">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 댓글 섹션 -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h5 class="border-bottom my-3 py-2" th:text="|댓글 ${#lists.size(goWithBoard.commentList)}|"></h5>
+
+            <!-- 댓글 폼 -->
+            <form th:action="@{|/goWith/comment/create/${goWithBoard.id}|}" th:object="${goWithCommentFormDto}" method="post" class="my-2">
+                <div th:replace="board/goWith/form_errors :: formErrorsFragment"></div>
+                <div class="d-flex">
+                    <textarea placeholder="댓글을 등록해보세요!" th:field="*{content}" class="form-control me-2" rows="2"></textarea>
+                    <input type="submit" value="등록" class="btn mgrBtn">
+                </div>
+            </form>
+
+            <!-- 댓글 반복 시작 -->
+            <div th:each="goWithComment : ${goWithBoard.commentList}" class="my-3 border rounded p-3">
+                <div class="col-12">
+                    <div class="text-muted me-3">
+                        <span th:text="${goWithComment.member.nickname}" class="userNick"></span>
+                        <span th:text="${#temporals.format(goWithComment.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+                        <span th:if="${goWithComment.modifiedDate != null}">
+                            <span th:text="${#temporals.format(goWithComment.modifiedDate, 'yyyy-MM-dd HH:mm')} + '수정됨'"></span>
+                        </span>
+                    </div>
+                    <hr/>
+                    <div th:utext="${@commonUtil.markdown(goWithComment.content)}"></div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <a th:href="@{|/goWith/comment/modify/${goWithComment.id}|}" class="btn btn-sm btn-outline-secondary me-2"
+                           sec:authorize="isAuthenticated()"
+                           th:if="${goWithComment.member != null and #authentication.getPrincipal().getEmail() == goWithComment.member.email}"
+                           th:text="수정"></a>
+                        <a href="javascript:void(0);" th:data-uri="@{|/goWith/comment/delete/${goWithComment.id}|}"
+                           class="delete btn btn-sm btn-outline-secondary"
+                           sec:authorize="isAuthenticated()"
+                           th:if="${goWithComment.member != null and #authentication.getPrincipal().getEmail() == goWithComment.member.email}"
+                           th:text="삭제" onclick="deleteQuestion(event)"></a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script layout:fragment="script" type='text/javascript'>
+    function deleteQuestion(event) {
+        event.preventDefault(); // 기본 동작인 링크 이동을 방지합니다.
+        if (confirm("글을 삭제하시겠습니까?")) {
+            const uri = event.target.getAttribute('data-uri'); // 버튼의 data-uri 속성 값 가져오기
+            location.href = uri; // URI로 이동
+        }
+    }
+</script>
+</body>
+</html>

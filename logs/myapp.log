@@ -1,0 +1,10 @@
+- ssh 복구 (파일질라 연결 안될때)
+sudo chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+sudo chmod 700 /home/ubuntu/.ssh
+sudo chmod 600 /home/ubuntu/.ssh/authorized_keys
+
+eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFkbWluQG1nci5jb20iLCJpZCI6MSwiaWF0IjoxNzE4NDI3NzI4LCJleHAiOjE3MTkwMzI1Mjh9.OgEE4Ui58JmLlz6GvAB6exHDe23BA1X4QqKSgrt3TwI	
+eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFkbWluQG1nci5jb20iLCJpZCI6MSwiaWF0IjoxNzE4NDI3NzI4LCJleHAiOjE3MTkwMzI1Mjh9.OgEE4Ui58JmLlz6GvAB6exHDe23BA1X4QqKSgrt3TwI	
+
+eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiaWF0IjoxNzE4NDI3NzI4LCJleHAiOjE3MTkwMzI1Mjh9.goAZKvGe0fgylpblLOroO1kGkmK5F1aNsUiePU15jfw	
+eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiaWF0IjoxNzE4NDI3NzI4LCJleHAiOjE3MTkwMzI1Mjh9.goAZKvGe0fgylpblLOroO1kGkmK5F1aNsUiePU15jfw	

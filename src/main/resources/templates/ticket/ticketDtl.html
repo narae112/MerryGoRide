@@ -1,0 +1,268 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default}">
+<head>
+
+    <!-- jQuery UI CSS 추가 -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+<th:block layout:fragment="script">
+    <!-- jQuery 및 jQuery UI JavaScript 추가 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script th:inline="javascript">
+        $(function(){
+            calculateTotalPrice();
+
+            $("#adultCount").change(function(){
+                calculateTotalPrice();
+            });
+
+            $("#childCount").change(function(){
+                calculateTotalPrice();
+            });
+
+            // datepicker 초기화 및 달력만 보이도록 설정
+            $("#datepicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                minDate: new Date($('#startDate').val()),
+                maxDate: new Date($('#endDate').val()),
+                onSelect: function(dateText) {
+                    $("#visitDate").val(dateText);
+
+                    // 다음 항목으로 포커스 이동
+                    $("#focus-target").focus();
+
+                }
+            });
+
+        });
+
+        function calculateTotalPrice() {
+            var adultCount = $("#adultCount").val() || 0;
+            var childCount = $("#childCount").val() || 0;
+            var adultPrice = $("#adultPrice").val() || 0;
+            var childPrice = $("#childPrice").val() || 0;
+            var totalPrice = adultPrice * adultCount + childPrice * childCount;
+            $("#totalPrice").html(formatNumber(totalPrice) + '원');
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function addReservation(){
+
+            var url = "/member/reservation";
+            var paramData = {
+                ticketId : $("#ticketId").val(),
+                adultCount : $("#adultCount").val(),
+                childCount : $("#childCount").val(),
+                visitDate : $("#visitDate").val(),
+                reservationDate : new Date()
+            };
+
+            var param = JSON.stringify(paramData);
+
+            $.ajax({
+                url      : url,
+                type     : "POST",
+                contentType : "application/json",
+                data     : param,
+                dataType : "json",
+                cache   : false,
+                success  : function(result, status){
+                    alert("티켓이 예약되었습니다 \n결제 후 사용이 가능합니다");
+                    window.location.replace("/member/reservations");
+                },
+                error : function(jqXHR, status, error){
+
+                    if(jqXHR.status == '403' || jqXHR.status == '500'){
+                        alert('로그인 후 이용해주세요');
+
+                        location.href='/login';
+                    } else{
+                        alert("오류 = " + jqXHR.status);
+                        location.href='/';
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // 오늘 날짜를 가져오는 함수
+            function getTodayDate() {
+                var today = new Date();
+                var dd = String(today.getDate()).padStart(2, '0');
+                var mm = String(today.getMonth() + 1).padStart(2, '0'); // 1월은 0부터 시작하므로 +1
+                var yyyy = today.getFullYear();
+                return yyyy + '-' + mm + '-' + dd;
+            }
+
+            // 시작일(input id="startDate")의 값을 오늘 날짜로 설정
+            $('#startDate').val(getTodayDate());
+            $('#startDate').attr("min", getTodayDate());
+
+            var startDate = $('#startDate').val();
+            $('#endDate').attr("min", startDate);
+
+            $('#startDate').on('change', function() {
+                var startDate = $(this).val();
+                $('#endDate').attr("min", startDate);
+            });
+        });
+    </script>
+</th:block>
+<!-- css -->
+<th:block layout:fragment="css">
+    <style>
+        /* .content 클래스로 감싸진 요소에만 스타일이 적용되도록 설정 */
+        .content {
+            .mgb-15 {
+                margin-bottom: 15px;
+            }
+            .mgt-30 {
+                margin-top: 30px;
+            }
+            .mgt-50 {
+                margin-top: 50px;
+            }
+            .repImgDiv {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+             .repImg {
+                height: 100%;
+                object-fit: contain; /* 이미지가 공간에 꽉 차지 않고 원본 비율을 유지하며 모두 표시됩니다. */
+            }
+            .wd50 {
+                height: auto;
+                width: 50%;
+            }
+            .flex-column-full {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+            .container {
+                margin-top: 20px; /* 상단 여백 설정 */
+                background-color: white; /* 배경색 설정 */
+                padding: 20px; /* 내부 여백 설정 */
+                border-radius: 10px; /* 테두리 둥글기 설정 */
+                box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1); /* 그림자 설정 */
+            }
+            h4 {
+                color: #343a40; /* 헤더 색상 설정 */
+            }
+            hr {
+                border-top: 1px solid #dee2e6; /* 수평선 색상 설정 */
+                margin-top: 1rem; /* 수평선 위 여백 설정 */
+                margin-bottom: 1rem; /* 수평선 아래 여백 설정 */
+            }
+            p {
+                color: #6c757d; /* 문단 색상 설정 */
+            }
+            .input-group-text {
+                background-color: #007bff; /* 입력 그룹 텍스트 배경색 설정 */
+                color: white; /* 입력 그룹 텍스트 색상 설정 */
+                border-color: #007bff; /* 입력 그룹 텍스트 테두리 색상 설정 */
+            }
+            .form-control {
+                border-color: #ced4da; /* 입력 폼 테두리 색상 설정 */
+            }
+            .btn-primary {
+                background-color: #007bff; /* 버튼 배경색 설정 */
+                border-color: #007bff; /* 버튼 테두리 색상 설정 */
+            }
+            .btn-primary:hover {
+                background-color: #0056b3; /* 호버 시 버튼 배경색 설정 */
+                border-color: #0056b3; /* 호버 시 버튼 테두리 색상 설정 */
+            }
+            .jumbotron {
+                background-color: #f8f9fa; /* 점보트론 배경색 설정 */
+                padding-top: 20px; /* 점보트론 위 여백 설정 */
+                padding-bottom: 20px; /* 점보트론 아래 여백 설정 */
+            }
+        }
+    </style>
+</th:block>
+
+<div layout:fragment="content" style="width:100%; padding: 0 5%;">
+
+    <input type="hidden" id="ticketId" th:value="${ticket.id}"> <!-- ticketId 히든으로 넣어놓기 -->
+    <input type="hidden" id="startDate" th:value="${ticket.startDate}">
+    <input type="hidden" id="endDate" th:value="${ticket.endDate}">
+    <input type="hidden" id="visitDate" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"> <!-- 선택된 날짜를 저장할 히든 필드 -->
+    <h3 class="mb-5 text-center" tabindex="0">티켓 예매하기</h3>
+    <div class="d-flex mt-4" style="height: 100%;">
+        <div class="repImgDiv flex-shrink-0 me-3" style="width: 50%;"> <!-- 티켓이미지 -->
+            <img th:src="${ticket.ticketImgDtoList[0].imgUrl}" class="rounded repImg" th:alt="${ticket.name}">
+        </div>
+        <div class="flex-column-full">
+            <div>
+                <div class="h4" tabindex="0">
+                    <span th:text="${ticket.name} + ' (' + ${ticket.locationCategory.displayName} + '점)'"></span>
+                    <span class="visually-hidden" th:text="' 성인 티켓 가격: ' + ${#numbers.formatInteger(ticket.adultPrice, 0, 'COMMA')} + '원'"></span>
+                    <!--                    <input type="hidden" th:value="${ticket.adultPrice}" id="adultPrice" name="adultPrice">-->
+                    <span class="visually-hidden" th:text="' 어린이 티켓 가격: ' + ${#numbers.formatInteger(ticket.childPrice, 0, 'COMMA')} + '원'"></span>
+                    <!--                    <input type="hidden" th:value="${ticket.childPrice}" id="childPrice" name="childPrice">-->
+                </div>
+                <hr class="my-4">
+                <div>
+                    <p tabindex="0">방문예정일</p>
+                    <div id="datepicker"  class="text-center" aria-label="방문예정일을 선택하세요"></div> <!-- 달력만 표시 -->
+                </div>
+            </div>
+            <div id="focus-target" tabindex="-1"></div>
+            <div class="mt-auto">
+                <div class="h4 text-danger text-start ms-3" id="adultPriceSection">
+                    <input type="hidden" th:value="${ticket.adultPrice}" id="adultPrice"  name="adultPrice">
+                    성인: <span th:text="${#numbers.formatInteger(ticket.adultPrice, 0, 'COMMA')}"></span>원
+                </div>
+                <div class="input-group w-50">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" aria-label="성인 티켓 수량" tabindex="0">수량</span>
+                    </div>
+                    <input aria-label="성인 티켓 수량 입력" type="number" name="adultCount" id="adultCount" class="form-control" value="1" min="1" onchange="calculateTotalPrice()" required>
+                </div>
+
+                <div class="h4 text-danger text-start ms-3">
+                    <input type="hidden" th:value="${ticket.childPrice}" id="childPrice" name="childPrice">
+                    어린이: <span th:text="${#numbers.formatInteger(ticket.childPrice, 0, 'COMMA')}"></span>원
+                </div>
+
+                <div class="input-group w-50">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" aria-label="어린이 티켓 수량" tabindex="0">수량</span>
+                    </div>
+                    <input aria-label="어린이 티켓 수량 입력" type="number" name="childCount" id="childCount" class="form-control" value="0" min="0" onchange="calculateTotalPrice()" required>
+                </div>
+                <hr class="my-4">
+                <div class="text-end mgt-50">
+                    <h5 tabindex="0">결제 금액</h5>
+                    <h3 name="totalPrice" id="totalPrice" class="font-weight-bold" tabindex="0"></h3>
+                    <div class="text-right">
+                        <button type="button" class="btn btn-primary btn-lg mt-3" onclick="addReservation()">예약하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="jumbotron jumbotron-fluid mgt-30">
+        <div class="container">
+            <h3>티켓 상세 정보</h3>
+            <hr class="my-4">
+            <p class="lead" th:text="${ticket.memo}"></p>
+        </div>
+    </div>
+
+    <div th:each="ticketImage : ${ticket.ticketImgDtoList}" class="text-center">
+        <img th:if="${not #strings.isEmpty(ticketImage.imgUrl)}"
+             th:src="${ticketImage.imgUrl}" class="rounded mgb-15" width="800">
+    </div>
+
+</div>
+</html>
